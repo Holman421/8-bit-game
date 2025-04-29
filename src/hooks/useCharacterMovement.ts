@@ -4,7 +4,7 @@ export function useCharacterMovement({ walls }: { walls: Set<string> }) {
   const [position, setPosition] = useState({ x: 3, y: 3 });
   const [direction, setDirection] = useState<'down' | 'up' | 'left' | 'right'>('down');
   const [isMoving, setIsMoving] = useState(false);
-  const [smoothMovement, setSmoothMovement] = useState(true);
+  const [smoothMovement] = useState(true);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (isMoving) return;
