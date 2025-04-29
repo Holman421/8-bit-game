@@ -49,7 +49,6 @@ function App() {
           direction={direction}
           isMoving={isMoving}
           smoothMovement={smoothMovement}
-          onSpawn={pos => setCurrentLevel(pos)}
         />
         <div className="mt-4">
           <Inventory items={items} />

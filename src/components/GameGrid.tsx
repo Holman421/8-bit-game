@@ -9,7 +9,9 @@ type GridType = 'default' | 'dungeon' | 'pokemon' | 'monopoly';
 
 const DOOR_POSITIONS = {
     default: { x: 6, y: 3 },
-    dungeon: { x: 3, y: 6 }
+    dungeon: { x: 3, y: 6 },
+    pokemon: { x: 6, y: 3 },
+    monopoly: { x: 6, y: 3 }
 };
 
 interface GameGridProps {
