@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@keyframes sprite-animation {
+    from {
+        background-position-x: 0%;
+    }
+    to {
+        background-position-x: -400%;
+    }
+}
