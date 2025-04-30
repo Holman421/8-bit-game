@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import PathTileImg from "../assets/images/path-game-tile.png";
-import WallTileImg from "../assets/images/wall-game-tile.png";
+// import PathTileImg from "../assets/images/path-game-tile.png";
+// import WallTileImg from "../assets/images/wall-game-tile.png";
 import GrassTileImg from "../assets/images/grass-game-tile.png";
 import DoorTileImg from "../assets/images/door-game-tile.png";
 import RockTileImg2 from "../assets/images/rock-game-tile-2.png";
