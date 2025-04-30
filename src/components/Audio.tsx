@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import OverworldAudio from "../assets/audio/overworld-music.mp3"
-import DungeonAudio from "../assets/audio/dungeon-music.mp3";
+// import DungeonAudio from "../assets/audio/dungeon-music.mp3";
 
 interface AudioProps {
     currentLevel: 'default' | 'dungeon';
@@ -10,7 +10,7 @@ interface AudioProps {
 const Audio: FC<AudioProps> = ({ currentLevel, isMenuOpen }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [currentAudio, setCurrentAudio] = useState(OverworldAudio);
+    // const [currentAudio, setCurrentAudio] = useState(OverworldAudio);
 
     useEffect(() => {
         if (audioRef.current) {
@@ -44,7 +44,7 @@ const Audio: FC<AudioProps> = ({ currentLevel, isMenuOpen }) => {
             </button>
             <audio
                 ref={audioRef}
-                src={currentAudio}
+                src={OverworldAudio}
                 loop
             />
         </>
