@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-export function useCharacterMovement({ walls, isMenuOpen }: { walls: Set<string>, isMenuOpen: boolean }) {
-  const [position, setPosition] = useState({ x: 3, y: 3 });
+export function useCharacterMovement({ walls, isMenuOpen, currentLevel }: { walls: Set<string>, isMenuOpen: boolean, currentLevel: 'default' | 'dungeon' }) {
+  const [position, setPosition] = useState({ x: 3, y: 6 });
   const [direction, setDirection] = useState<'down' | 'up' | 'left' | 'right'>('down');
   const [isMoving, setIsMoving] = useState(false);
-  const [smoothMovement] = useState(true);
+  const [smoothMovement, setSmoothMovement] = useState(true);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const previousLevel = useRef<'default' | 'dungeon' | null>(null);
 
   const move = useCallback((dir: 'up' | 'down' | 'left' | 'right') => {
     if (isMoving || isMenuOpen) return;
@@ -67,7 +68,7 @@ export function useCharacterMovement({ walls, isMenuOpen }: { walls: Set<string>
 
     // Require minimum swipe distance to trigger movement
     const minSwipeDistance = 30;
-    
+
     if (Math.abs(dx) < minSwipeDistance && Math.abs(dy) < minSwipeDistance) return;
 
     if (Math.abs(dx) > Math.abs(dy)) {
@@ -89,6 +90,21 @@ export function useCharacterMovement({ walls, isMenuOpen }: { walls: Set<string>
       window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [handleKeyDown, handleTouchStart, handleTouchEnd]);
+
+  // Update effect for level change
+  useEffect(() => {
+    setSmoothMovement(false);
+
+    if (previousLevel.current === 'dungeon' && currentLevel === 'default') {
+      setPosition({ x: 6, y: 2 });
+    } else if (currentLevel === 'dungeon') {
+      setPosition({ x: 3, y: 6 });
+    }
+
+    previousLevel.current = currentLevel;
+    const timer = setTimeout(() => setSmoothMovement(true), 50);
+    return () => clearTimeout(timer);
+  }, [currentLevel]);
 
   return { position, direction, isMoving, smoothMovement };
 }

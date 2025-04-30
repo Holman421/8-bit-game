@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import OverworldAudio from "../assets/audio/overworld-music.mp3"
-// import DungeonAudio from "../assets/audio/dungeon-music.mp3";
+import DungeonAudio from "../assets/audio/dungeon-music.mp3";
 
 interface AudioProps {
     currentLevel: 'default' | 'dungeon';
@@ -10,8 +10,8 @@ interface AudioProps {
 const Audio: FC<AudioProps> = ({ currentLevel, isMenuOpen }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    // const [currentAudio, setCurrentAudio] = useState(OverworldAudio);
 
+    // Handle initial volume and menu state
     useEffect(() => {
         if (audioRef.current) {
             audioRef.current.volume = 0.3;
@@ -21,7 +21,16 @@ const Audio: FC<AudioProps> = ({ currentLevel, isMenuOpen }) => {
                     .catch(console.error);
             }
         }
-    }, [isMenuOpen, currentLevel]);
+    }, [isMenuOpen]);
+
+    // Handle level changes
+    useEffect(() => {
+        if (audioRef.current && isPlaying) {
+            audioRef.current.pause();
+            audioRef.current.load();
+            audioRef.current.play().catch(console.error);
+        }
+    }, [currentLevel]);
 
     const toggleSound = () => {
         if (audioRef.current) {
@@ -44,7 +53,7 @@ const Audio: FC<AudioProps> = ({ currentLevel, isMenuOpen }) => {
             </button>
             <audio
                 ref={audioRef}
-                src={OverworldAudio}
+                src={currentLevel === 'default' ? OverworldAudio : DungeonAudio}
                 loop
             />
         </>

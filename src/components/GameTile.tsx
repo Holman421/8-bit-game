@@ -4,33 +4,48 @@ import WallTileImg from "../assets/images/wall-game-tile.png";
 import GrassTileImg from "../assets/images/grass-game-tile.png";
 import DoorTileImg from "../assets/images/door-game-tile.png";
 import RockTileImg2 from "../assets/images/rock-game-tile-2.png";
+import TreeTileImg from "../assets/images/game-tile-tree.png"
+import PathTileImg2 from "../assets/images/game-tile-path.png"
+import LavaGameTile from "../assets/images/lava-game-tile.png"
 
-type TileType = 'grass' | 'wall' | 'path' | 'door' | 'rock';
+type TileType = 'grass' | 'wall' | 'path' | 'door' | 'rock' | "lava";
 
 interface GameTileProps {
     type: TileType;
+    x: number;
+    y: number;
     className?: string;
 }
 
-const GameTile: FC<GameTileProps> = ({ type, className = '' }) => {
+const DEBUG_MODE = false;
+
+const GameTile: FC<GameTileProps> = ({ type, className = '', y, x }) => {
     const tileImages: Record<TileType, string> = {
         grass: GrassTileImg,
-        wall: WallTileImg,
-        path: PathTileImg,
+        wall: GrassTileImg,
+        path: PathTileImg2,
         door: DoorTileImg,
         rock: RockTileImg2,
+        lava: LavaGameTile,
     };
 
     return (
-        <div className={`w-full h-full ${className}`}>
+        <div className={`w-full h-full relative ${className}`}>
             <img
                 src={tileImages[type]}
                 alt={`${type} tile`}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="%23999" d="M13 13h-2V7h2v6zm0 4h-2v-2h2v2zm-1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/%3E%3C/svg%3E';
-                }}
+
             />
+            {DEBUG_MODE && <div className="absolute z-2 inset-0 flex items-center justify-center text-white font-extrabold text-xs">{`${x},${y}`}</div>}
+
+            {type === "wall" &&
+                <img
+                    src={TreeTileImg}
+                    alt={`${type} tile`}
+                    className="w-full h-full inset-0 object-cover absolute"
+                />
+            }
         </div>
     );
 };

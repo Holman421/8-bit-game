@@ -1,54 +1,66 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import GameTile from './GameTile';
 import CharacterTile from './CharacterTile';
-import { TileType } from '../types/types';
+import { TileType, LevelMap } from '../types/types';
 
-type GridType = 'default' | 'dungeon' | 'pokemon' | 'monopoly';
-
-const DOOR_POSITIONS = {
-    default: { x: 6, y: 3 },
-    dungeon: { x: 3, y: 6 },
-    pokemon: { x: 6, y: 3 },
-    monopoly: { x: 6, y: 3 }
-};
+type GridType = 'default' | 'dungeon';
 
 interface GameGridProps {
     type: GridType;
-    walls: Set<string>;
+    levelData: LevelMap;
     position: { x: number; y: number };
     direction: 'up' | 'down' | 'left' | 'right';
     isMoving: boolean;
     smoothMovement: boolean;
-    onTap?: () => void;
+    setCurrentLevel: React.Dispatch<React.SetStateAction<"default" | "dungeon">>;
 }
 
-const getTileType = (x: number, y: number, walls: Set<string>, gridType: GridType): TileType => {
-    // Check for door first
-    const doorPos = DOOR_POSITIONS[gridType];
-    if (doorPos && x === doorPos.x && y === doorPos.y) return 'door';
+const getTileType = (x: number, y: number, levelData: LevelMap, gridType: GridType): TileType => {
+    const pos = `${x},${y}`;
 
-    // Then check walls
-    if (walls.has(`${x},${y}`)) return 'wall';
-
-    // Finally return appropriate ground tile
-    switch (gridType) {
-        case 'dungeon':
-            return 'rock';
-        case 'pokemon':
-            return 'grass';
-        case 'monopoly':
-            return 'path';
-        default:
-            return 'grass';
+    // Check doors first
+    if (levelData.doors.some(door => `${door.x},${door.y}` === pos)) {
+        return 'door';
     }
+
+    // Then check other tiles
+    const tile = levelData.tiles.find(t => `${t.position.x},${t.position.y}` === pos);
+    if (tile) {
+        return tile.type;
+    }
+
+    // Default ground tiles
+    return gridType === 'dungeon' ? 'rock' : 'grass';
 };
 
-const GameGrid: FC<GameGridProps> = ({ type, walls, position, direction, isMoving, smoothMovement, onTap }) => {
+const isAtDoorPosition = (x: number, y: number, levelData: LevelMap): boolean => {
+    return levelData.doors.some(door => door.x === x && door.y === y);
+};
+
+const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isMoving, smoothMovement, setCurrentLevel }) => {
+    const isAtDoor = isAtDoorPosition(position.x, position.y, levelData);
+
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.code === 'Space' && isAtDoor) {
+                setCurrentLevel(prev => prev === 'default' ? 'dungeon' : 'default');
+            }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [isAtDoor]);
+
+    const handleTap = () => {
+        if (isAtDoor) {
+            setCurrentLevel(prev => prev === 'default' ? 'dungeon' : 'default');
+        }
+    };
+
     return (
         <>
             <div
                 className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
-                onClick={onTap}
+                onClick={handleTap}
             >
                 {Array.from({ length: 49 }).map((_, i) => {
                     const x = i % 7;
@@ -56,7 +68,9 @@ const GameGrid: FC<GameGridProps> = ({ type, walls, position, direction, isMovin
                     return (
                         <GameTile
                             key={i}
-                            type={getTileType(x, y, walls, type)}
+                            x={x}
+                            y={y}
+                            type={getTileType(x, y, levelData, type)}
                         />
                     );
                 })}
