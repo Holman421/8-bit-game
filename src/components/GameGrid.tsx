@@ -1,9 +1,7 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC } from 'react';
 import GameTile from './GameTile';
 import CharacterTile from './CharacterTile';
 import { TileType } from '../types/types';
-import DungeonMusic from "../assets/audio/dungeon-music.mp3"
-import OverworldMusic from "../assets/audio/overworld-music.mp3"
 
 type GridType = 'default' | 'dungeon' | 'pokemon' | 'monopoly';
 
@@ -21,6 +19,7 @@ interface GameGridProps {
     direction: 'up' | 'down' | 'left' | 'right';
     isMoving: boolean;
     smoothMovement: boolean;
+    onTap?: () => void;
 }
 
 const getTileType = (x: number, y: number, walls: Set<string>, gridType: GridType): TileType => {
@@ -44,23 +43,13 @@ const getTileType = (x: number, y: number, walls: Set<string>, gridType: GridTyp
     }
 };
 
-const GameGrid: FC<GameGridProps> = ({ type, walls, position, direction, isMoving, smoothMovement }) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-
-    useEffect(() => {
-        const audio = audioRef.current;
-        if (audio) {
-            audio.src = type === 'default' ? OverworldMusic : DungeonMusic;
-            audio.loop = true;
-            audio.volume = 0.5;
-            audio.play().catch(() => { });
-        }
-    }, [type]);
-
+const GameGrid: FC<GameGridProps> = ({ type, walls, position, direction, isMoving, smoothMovement, onTap }) => {
     return (
         <>
-            <audio ref={audioRef} preload="auto" />
-            <div className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square">
+            <div
+                className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
+                onClick={onTap}
+            >
                 {Array.from({ length: 49 }).map((_, i) => {
                     const x = i % 7;
                     const y = Math.floor(i / 7);

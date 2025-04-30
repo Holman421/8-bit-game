@@ -10,10 +10,10 @@ interface CharacterTileProps {
 
 const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, smoothMovement }) => {
     const spritePositions = {
-        down: '0 0',
+        down: '0 0px',
         right: '0 -100%',
         left: '0 -200%',
-        up: '0 -300%'
+        up: '0 -298%'
     };
 
     return (
@@ -24,7 +24,7 @@ const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, 
                 height: 'calc(100%/7)',
                 top: 0,
                 left: 0,
-                transform: `translate(calc(${position.x} * (100% + 0px)), calc(${position.y} * (100% + 2px)))`,
+                transform: `translate(calc(${position.x} * (100% + 0px)), calc(${position.y} * (100% + 1px)))`,
                 transition: smoothMovement ? 'transform 300ms ease-in-out' : 'none',
             }}
         >
@@ -33,7 +33,7 @@ const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, 
                 style={{
                     backgroundImage: `url(${CharacterSprite})`,
                     backgroundPosition: spritePositions[direction],
-                    backgroundSize: '400% 400%',
+                    backgroundSize: '405% 405%',
                     animation: isMoving ? 'sprite-animation 0.3s steps(4) infinite' : 'none'
                 }}
             />

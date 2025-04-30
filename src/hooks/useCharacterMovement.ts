@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export function useCharacterMovement({ walls }: { walls: Set<string> }) {
+export function useCharacterMovement({ walls, isMenuOpen }: { walls: Set<string>, isMenuOpen: boolean }) {
   const [position, setPosition] = useState({ x: 3, y: 3 });
   const [direction, setDirection] = useState<'down' | 'up' | 'left' | 'right'>('down');
   const [isMoving, setIsMoving] = useState(false);
@@ -8,7 +8,7 @@ export function useCharacterMovement({ walls }: { walls: Set<string> }) {
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
 
   const move = useCallback((dir: 'up' | 'down' | 'left' | 'right') => {
-    if (isMoving) return;
+    if (isMoving || isMenuOpen) return;
 
     setPosition(prev => {
       let next = { ...prev };
@@ -38,7 +38,7 @@ export function useCharacterMovement({ walls }: { walls: Set<string> }) {
       }
       return prev;
     });
-  }, [isMoving, walls]);
+  }, [isMoving, walls, isMenuOpen]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     switch (e.key) {
