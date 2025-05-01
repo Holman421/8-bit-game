@@ -13,7 +13,7 @@ function App() {
   const [currentLevel, setCurrentLevel] = useState<'default' | 'dungeon'>('default');
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const { levelData } = useTileGeneration(currentLevel);
-  const { position, direction, isMoving, smoothMovement } = useCharacterMovement({
+  const { position, direction, isMoving, isBumping, smoothMovement } = useCharacterMovement({
     walls: new Set(levelData.tiles
       .filter(tile => tile.type === 'wall' || tile.type === "lava")
       .map(tile => `${tile.position.x},${tile.position.y}`)),
@@ -33,7 +33,7 @@ function App() {
       />
       <Menu
         isMenuOpen={isMenuOpen}
-        setIsMenuOpen={setIsMenuOpen}
+        setIsMenuOpen={setIsMenuOpen} ease-in-out
       />
       <Audio currentLevel={currentLevel} isMenuOpen={isMenuOpen} />
       <div className={`relative max-w-[400px] p-4 transition-all duration-300 ease-in-out ${isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -45,6 +45,7 @@ function App() {
           isMoving={isMoving}
           smoothMovement={smoothMovement}
           setCurrentLevel={setCurrentLevel}
+          isBumping={isBumping}
         />
         <div className="mt-4">
           <Inventory items={items} />

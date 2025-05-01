@@ -11,6 +11,7 @@ interface GameGridProps {
     position: { x: number; y: number };
     direction: 'up' | 'down' | 'left' | 'right';
     isMoving: boolean;
+    isBumping: boolean;
     smoothMovement: boolean;
     setCurrentLevel: React.Dispatch<React.SetStateAction<"default" | "dungeon">>;
 }
@@ -37,7 +38,7 @@ const isAtDoorPosition = (x: number, y: number, levelData: LevelMap): boolean =>
     return levelData.doors.some(door => door.x === x && door.y === y);
 };
 
-const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isMoving, smoothMovement, setCurrentLevel }) => {
+const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isMoving, isBumping, smoothMovement, setCurrentLevel }) => {
     const isAtDoor = isAtDoorPosition(position.x, position.y, levelData);
 
     useEffect(() => {
@@ -79,6 +80,7 @@ const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isM
                     direction={direction}
                     isMoving={isMoving}
                     smoothMovement={smoothMovement}
+                    isBumping={isBumping}
                 />
             </div>
         </>

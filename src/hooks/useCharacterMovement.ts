@@ -4,42 +4,46 @@ export function useCharacterMovement({ walls, isMenuOpen, currentLevel }: { wall
   const [position, setPosition] = useState({ x: 3, y: 6 });
   const [direction, setDirection] = useState<'down' | 'up' | 'left' | 'right'>('down');
   const [isMoving, setIsMoving] = useState(false);
+  const [isBumping, setIsBumping] = useState(false);
   const [smoothMovement, setSmoothMovement] = useState(true);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const previousLevel = useRef<'default' | 'dungeon' | null>(null);
 
   const move = useCallback((dir: 'up' | 'down' | 'left' | 'right') => {
-    if (isMoving || isMenuOpen) return;
+    if (isMoving || isMenuOpen || isBumping) return;
+
+    setDirection(dir);
 
     setPosition(prev => {
+      // Check boundaries first
+      const willHitBoundary = (
+        (dir === 'up' && prev.y <= 0) ||
+        (dir === 'down' && prev.y >= 6) ||
+        (dir === 'left' && prev.x <= 0) ||
+        (dir === 'right' && prev.x >= 6)
+      );
+
       let next = { ...prev };
-      switch (dir) {
-        case 'up':
-          setDirection('up');
-          next = prev.y > 0 ? { ...prev, y: prev.y - 1 } : prev;
-          break;
-        case 'down':
-          setDirection('down');
-          next = prev.y < 6 ? { ...prev, y: prev.y + 1 } : prev;
-          break;
-        case 'left':
-          setDirection('left');
-          next = prev.x > 0 ? { ...prev, x: prev.x - 1 } : prev;
-          break;
-        case 'right':
-          setDirection('right');
-          next = prev.x < 6 ? { ...prev, x: prev.x + 1 } : prev;
-          break;
+      if (!willHitBoundary) {
+        switch (dir) {
+          case 'up': next.y -= 1; break;
+          case 'down': next.y += 1; break;
+          case 'left': next.x -= 1; break;
+          case 'right': next.x += 1; break;
+        }
       }
 
-      if (next !== prev && !walls.has(`${next.x},${next.y}`)) {
-        setIsMoving(true);
-        setTimeout(() => setIsMoving(false), 300);
-        return next;
+      if (willHitBoundary || walls.has(`${next.x},${next.y}`)) {
+        setIsBumping(true);
+        setTimeout(() => setIsBumping(false), 150);
+        return prev;
       }
-      return prev;
+
+      setIsMoving(true);
+      setTimeout(() => setIsMoving(false), 300);
+      return next;
     });
-  }, [isMoving, walls, isMenuOpen]);
+  }, [isMoving, walls, isMenuOpen, isBumping]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     switch (e.key) {
@@ -106,5 +110,5 @@ export function useCharacterMovement({ walls, isMenuOpen, currentLevel }: { wall
     return () => clearTimeout(timer);
   }, [currentLevel]);
 
-  return { position, direction, isMoving, smoothMovement };
+  return { position, direction, isMoving, smoothMovement, isBumping };
 }
