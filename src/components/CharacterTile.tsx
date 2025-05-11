@@ -1,15 +1,27 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import CharacterSprite from '../assets/images/character-sprite.png';
+import { useGame } from '../context/GameContext';
 
-interface CharacterTileProps {
-    position: { x: number; y: number };
-    direction: 'up' | 'down' | 'left' | 'right';
-    isMoving: boolean;
-    smoothMovement: boolean;
-    isBumping?: boolean;
-}
+const CharacterTile: FC = () => {
+    const { position, direction, isMoving, smoothMovement, isBumping, isGameOver, isHoleRevealed } = useGame();
+    const [showFallingAnimation, setShowFallingAnimation] = useState(false);
 
-const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, smoothMovement, isBumping }) => {
+    // Add delay for falling animation to allow character to fully move into the hole position
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isGameOver && isHoleRevealed) {
+            timer = setTimeout(() => {
+                setShowFallingAnimation(true);
+            }, 200); // Delay animation to let character fully move into tile
+        } else {
+            setShowFallingAnimation(false);
+        }
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [isGameOver, isHoleRevealed]);
+
     const spritePositions = {
         down: '0 0px',
         right: '0 -100%',
@@ -19,7 +31,7 @@ const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, 
 
     const getBumpTransform = () => {
         if (!isBumping) return '';
-        const bumpDistance = '12px'; // Increased from previous value
+        const bumpDistance = '12px';
         switch (direction) {
             case 'up': return `translateY(-${bumpDistance})`;
             case 'down': return `translateY(${bumpDistance})`;
@@ -29,16 +41,25 @@ const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, 
         }
     };
 
+    // Add falling animation when player falls into a hole
+    const getFallingAnimation = () => {
+        if (showFallingAnimation) {
+            return 'falling-animation 1s forwards';
+        }
+        return '';
+    };
+
     return (
         <div
-            className="absolute aspect-square"
+            className="absolute aspect-square z-50"
             style={{
                 width: 'calc(100%/7)',
                 height: 'calc(100%/7)',
                 top: 0,
                 left: 0,
                 transform: `translate(calc(${position.x} * (100% + 0px)), calc(${position.y} * (100% + 1px))) ${getBumpTransform()}`,
-                transition: smoothMovement ? 'transform 300ms ease-out' : 'none', // Faster transition
+                transition: smoothMovement ? 'transform 300ms ease-out' : 'none',
+                animation: getFallingAnimation()
             }}
         >
             <div
@@ -47,7 +68,7 @@ const CharacterTile: FC<CharacterTileProps> = ({ position, direction, isMoving, 
                     backgroundImage: `url(${CharacterSprite})`,
                     backgroundPosition: spritePositions[direction],
                     backgroundSize: '405% 405%',
-                    animation: (isMoving || isBumping) ? 'sprite-animation 0.2s steps(4) infinite' : 'none' // Slightly faster animation
+                    animation: (isMoving || isBumping) ? 'sprite-animation 0.2s steps(4) infinite' : 'none'
                 }}
             />
         </div>

@@ -4,7 +4,7 @@ export interface InventoryItem {
     image: string;
 }
 
-export type TileType = 'grass' | 'wall' | 'path' | 'door' | 'rock' | "lava" | "hole";
+export type TileType = 'grass' | 'wall' | 'path' | 'door' | 'rock' | "lava" | "hole" | "goblin";
 
 export type GridType = 'default' | 'dungeon';
 

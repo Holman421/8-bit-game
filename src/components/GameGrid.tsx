@@ -1,60 +1,67 @@
 import { FC, useEffect } from 'react';
 import GameTile from './GameTile';
 import CharacterTile from './CharacterTile';
-import { TileType, LevelMap } from '../types/types';
+import { useGame } from '../context/GameContext';
+import { TileType } from '../types/types';
 
-type GridType = 'default' | 'dungeon';
-
-interface GameGridProps {
-    type: GridType;
-    levelData: LevelMap;
-    position: { x: number; y: number };
-    direction: 'up' | 'down' | 'left' | 'right';
-    isMoving: boolean;
-    isBumping: boolean;
-    smoothMovement: boolean;
-    setCurrentLevel: React.Dispatch<React.SetStateAction<"default" | "dungeon">>;
-}
-
-const getTileType = (x: number, y: number, levelData: LevelMap, gridType: GridType): TileType => {
-    const pos = `${x},${y}`;
-
-    // Check doors first
-    if (levelData.doors.some(door => `${door.x},${door.y}` === pos)) {
-        return 'door';
-    }
-
-    // Then check other tiles
-    const tile = levelData.tiles.find(t => `${t.position.x},${t.position.y}` === pos);
-    if (tile) {
-        return tile.type;
-    }
-
-    // Default ground tiles
-    return gridType === 'dungeon' ? 'rock' : 'grass';
-};
-
-const isAtDoorPosition = (x: number, y: number, levelData: LevelMap): boolean => {
-    return levelData.doors.some(door => door.x === x && door.y === y);
-};
-
-const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isMoving, isBumping, smoothMovement, setCurrentLevel }) => {
-    const isAtDoor = isAtDoorPosition(position.x, position.y, levelData);
-
+const GameGrid: FC = () => {
+    const {
+        currentLevel,
+        levelData,
+        isAtDoor,
+        setCurrentLevel,
+        isHoleRevealed,
+    } = useGame();    // Check for duplicate tile positions at component mount
     useEffect(() => {
-        const handleKey = (e: KeyboardEvent) => {
-            if (e.code === 'Space' && isAtDoor) {
-                setCurrentLevel(prev => prev === 'default' ? 'dungeon' : 'default');
+        const positionMap = new Map();
+        levelData.tiles.forEach(tile => {
+            const posKey = `${tile.position.x},${tile.position.y}`;
+            if (positionMap.has(posKey)) {
+                console.error(`Duplicate tile position found at ${posKey}:`,
+                    `Types: ${positionMap.get(posKey)} and ${tile.type}`);
+            } else {
+                positionMap.set(posKey, tile.type);
             }
-        };
-        window.addEventListener('keydown', handleKey);
-        return () => window.removeEventListener('keydown', handleKey);
-    }, [isAtDoor]);
+        });
+    }, [levelData]);
 
+    // No longer need space key or tap to change levels - it happens automatically
     const handleTap = () => {
-        if (isAtDoor) {
-            setCurrentLevel(prev => prev === 'default' ? 'dungeon' : 'default');
+        // Door transfer now happens automatically in GameContext
+    };
+
+    const getTileType = (x: number, y: number): TileType => {
+        const pos = `${x},${y}`;
+
+        // Check doors first
+        if (levelData.doors.some(door => `${door.x},${door.y}` === pos)) {
+            return 'door';
         }
+
+        // Then check other tiles - using exact position matching
+        const matchingTiles = levelData.tiles.filter(t =>
+            t.position.x === x && t.position.y === y
+        );
+
+        // Log error if multiple tiles found at the same position
+        if (matchingTiles.length > 1) {
+            console.error(`Multiple tiles (${matchingTiles.length}) found at position ${x},${y}:`,
+                matchingTiles.map(t => t.type));
+        }
+
+        const tile = matchingTiles[0];
+
+        // Log if this is a hole
+        if (tile?.type === 'hole') {
+            console.log(`Found hole tile at ${x},${y}`);
+        }
+
+        if (tile) {
+            return tile.type;
+        }
+
+        // Default ground tiles
+        return currentLevel === 'dungeon' ? 'rock' : 'grass';
     };
 
     return (
@@ -66,22 +73,21 @@ const GameGrid: FC<GameGridProps> = ({ type, levelData, position, direction, isM
                 {Array.from({ length: 49 }).map((_, i) => {
                     const x = i % 7;
                     const y = Math.floor(i / 7);
+                    const tileType = getTileType(x, y);
+
+                    // Simplified hole check
+                    const shouldShowHole = tileType === 'hole' && isHoleRevealed;
                     return (
                         <GameTile
                             key={i}
                             x={x}
                             y={y}
-                            type={getTileType(x, y, levelData, type)}
+                            type={tileType}
+                            isHoleRevealed={shouldShowHole}
                         />
                     );
                 })}
-                <CharacterTile
-                    position={position}
-                    direction={direction}
-                    isMoving={isMoving}
-                    smoothMovement={smoothMovement}
-                    isBumping={isBumping}
-                />
+                <CharacterTile />
             </div>
         </>
     );

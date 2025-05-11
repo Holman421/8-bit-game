@@ -26,7 +26,6 @@ const LEVEL_LAYOUTS: LevelConfig = {
             { type: 'path', position: { x: 5, y: 5 } },
             { type: 'path', position: { x: 6, y: 5 } },
             { type: 'path', position: { x: 5, y: 6 } },
-            { type: 'path', position: { x: 6, y: 4 } },
             { type: 'path', position: { x: 6, y: 3 } },
             { type: 'path', position: { x: 3, y: 5 } },
             { type: 'path', position: { x: 2, y: 4 } },
@@ -40,7 +39,7 @@ const LEVEL_LAYOUTS: LevelConfig = {
             { type: 'path', position: { x: 2, y: 0 } },
             { type: 'path', position: { x: 3, y: 0 } },
             { type: 'path', position: { x: 4, y: 0 } },
-
+            { type: 'hole', position: { x: 6, y: 4 } },
         ],
         doors: [{ x: 6, y: 2 }]
     },
@@ -50,13 +49,23 @@ const LEVEL_LAYOUTS: LevelConfig = {
             { type: 'lava', position: { x: 1, y: 2 } },
             { type: 'lava', position: { x: 5, y: 1 } },
             { type: 'lava', position: { x: 5, y: 2 } },
-            { type: 'lava', position: { x: 2, y: 4 } },
+            { type: 'lava', position: { x: 5, y: 3 } },
+            { type: 'lava', position: { x: 4, y: 3 } },
+            { type: 'lava', position: { x: 4, y: 5 } },
+            { type: 'lava', position: { x: 0, y: 2 } },
+            { type: 'lava', position: { x: 1, y: 3 } },
             { type: 'lava', position: { x: 3, y: 4 } },
             { type: 'lava', position: { x: 4, y: 4 } },
             { type: 'lava', position: { x: 2, y: 2 } },
+            { type: 'lava', position: { x: 0, y: 5 } },
             { type: 'lava', position: { x: 4, y: 2 } },
+            { type: 'lava', position: { x: 0, y: 6 } },
+            { type: 'lava', position: { x: 1, y: 6 } },
+            { type: 'lava', position: { x: 0, y: 4 } },
+            { type: 'lava', position: { x: 1, y: 5 } }, { type: 'lava', position: { x: 0, y: 3 } },
+            { type: 'goblin', position: { x: 3, y: 0 } },
         ],
-        doors: [{ x: 3, y: 6 }]
+        doors: [] // No doors in dungeon - player can't go back
     }
 };
 
@@ -83,10 +92,31 @@ export function useTileGeneration(gridType: GridType) {
             .map(tile => `${tile.position.x},${tile.position.y}`)
     );
 
+    const holeSet = new Set(
+        levelData.tiles
+            .filter(tile => tile.type === 'hole')
+            .map(tile => `${tile.position.x},${tile.position.y}`)
+    );
+
+    const goblinSet = new Set(
+        levelData.tiles
+            .filter(tile => tile.type === 'goblin')
+            .map(tile => `${tile.position.x},${tile.position.y}`)
+    );
+
+    const lavaSet = new Set(
+        levelData.tiles
+            .filter(tile => tile.type === 'lava')
+            .map(tile => `${tile.position.x},${tile.position.y}`)
+    );
+
     return {
         walls: wallSet,
         doors: doorSet,
         paths: pathSet,
+        holes: holeSet,
+        goblins: goblinSet,
+        lava: lavaSet,
         levelData
     };
 }

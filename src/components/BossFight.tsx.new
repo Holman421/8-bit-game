@@ -1,0 +1,217 @@
+import { FC, useEffect, useState } from 'react';
+import { useGame } from '../context/GameContext';
+import MenuImg from '../assets/images/menu.png';
+import GoblinGif from '../assets/images/goblin.gif';
+import Dice from './Dice';
+
+const BossFight: FC = () => {
+    const { isBossFightActive, resetGame, setIsVictory } = useGame();
+    const [showMessage, setShowMessage] = useState(false);
+    const [gameStage, setGameStage] = useState<'intro' | 'rolling' | 'result'>('intro');
+    const [playerRoll, setPlayerRoll] = useState<number | null>(null);
+    const [bossRoll, setBossRoll] = useState<number | null>(null);
+    const [result, setResult] = useState<'win' | 'lose' | null>(null);
+    const [rolling, setRolling] = useState(false);
+    // Track if this is the first roll
+    const [isFirstRoll, setIsFirstRoll] = useState(true);
+
+    // Reset the boss fight state when it becomes inactive
+    useEffect(() => {
+        if (!isBossFightActive) {
+            setGameStage('intro');
+            setPlayerRoll(null);
+            setBossRoll(null);
+            setResult(null);
+            setRolling(false);
+            setIsFirstRoll(true); // Reset the first roll state
+        }
+    }, [isBossFightActive]);
+
+    // Add a delay before showing the boss fight message
+    useEffect(() => {
+        let timer: any;
+        if (isBossFightActive) {
+            timer = setTimeout(() => {
+                setShowMessage(true);
+            }, 500); // 0.5 second delay
+        } else {
+            setShowMessage(false);
+        }
+
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [isBossFightActive]);
+
+    // Function to roll dice for boss and player
+    const rollDice = () => {
+        setRolling(true);
+        setPlayerRoll(null);
+        setBossRoll(null);
+        setResult(null);
+        setGameStage('rolling');
+
+        // Roll for the boss first with animation effect - slower animation (150ms instead of 100ms)
+        const rollAnimation = setInterval(() => {
+            setBossRoll(Math.floor(Math.random() * 6) + 1);
+        }, 150);
+
+        // Stop boss roll and set the final value - longer animation time (2000ms instead of 1500ms)
+        setTimeout(() => {
+            clearInterval(rollAnimation);
+
+            // For the first roll, ensure boss gets a high number (5 or 6)
+            let finalBossRoll;
+            if (isFirstRoll) {
+                finalBossRoll = Math.floor(Math.random() * 2) + 5; // 5 or 6
+            } else {
+                finalBossRoll = Math.floor(Math.random() * 6) + 1; // 1-6
+            }
+
+            setBossRoll(finalBossRoll);
+
+            // Longer pause between boss roll and player roll (1000ms delay)
+            setTimeout(() => {
+                // Now roll for the player with slower animation
+                const playerRollAnimation = setInterval(() => {
+                    setPlayerRoll(Math.floor(Math.random() * 6) + 1);
+                }, 150);
+
+                // Stop player roll and determine the result - longer animation (2000ms)
+                setTimeout(() => {
+                    clearInterval(playerRollAnimation);
+
+                    // For the first roll, ensure player rolls a low number (1-4)
+                    let finalPlayerRoll;
+                    if (isFirstRoll) {
+                        finalPlayerRoll = Math.min(finalBossRoll - 1, Math.floor(Math.random() * 4) + 1); // 1-4, but always less than boss
+                        setIsFirstRoll(false); // No longer the first roll
+                    } else {
+                        finalPlayerRoll = Math.floor(Math.random() * 6) + 1; // 1-6
+                    }
+
+                    setPlayerRoll(finalPlayerRoll);
+                    
+                    // Delay showing the result
+                    setTimeout(() => {
+                        if (finalPlayerRoll > finalBossRoll) {
+                            setResult('win');
+                            // Set victory state to trigger victory audio in the Audio component
+                            setIsVictory(true);
+                        } else {
+                            setResult('lose');
+                        }
+
+                        setRolling(false);
+                        setGameStage('result');
+                    }, 800); // Pause before showing result
+                }, 2000);
+            }, 1000); // Delay between boss and player roll
+        }, 2000);
+    };
+
+    // Function to handle fight button click
+    const handleFight = () => {
+        if (gameStage === 'intro') {
+            setGameStage('rolling');
+            rollDice();
+        } else if (gameStage === 'result' && result === 'lose') {
+            // If player lost, try again
+            rollDice();
+        } else if (gameStage === 'result' && result === 'win') {
+            // If player won, end the fight
+            resetGame();
+        }
+    };
+
+    if (!isBossFightActive || !showMessage) return null;
+
+    return (
+        <div className="absolute z-[100] inset-0 bg-black/70 flex flex-col items-center justify-center ">
+            <div className="relative px-14 py-20 rounded-lg max-w-sm text-center min-w-[400px]">
+                <img
+                    src={MenuImg}
+                    className="absolute inset-0 w-full h-full object-fill"
+                    alt="Boss Fight Background"
+                />
+                <div className="relative z-10 flex flex-col items-center">
+                    <h2 className="text-5xl mt-6 gotisch font-bold mb-4 text-black">Boss Fight!</h2>
+                    <div className="flex justify-center mb-4">
+                        <img
+                            src={GoblinGif}
+                            alt="Goblin"
+                            className="w-24 h-24 object-contain"
+                        />
+                    </div>
+                    {gameStage === 'intro' && (
+                        <>
+                            <p className="text-2xl text-black">Goblin tě zpozoroval!</p>
+                            <p className="text-xl px-4 mb-8 text-black">K jeho poražení musíš hodit kostkou větší číslo než on</p>
+                        </>
+                    )}
+
+                    {gameStage === 'rolling' && (
+                        <>
+                            <div className="flex justify-around w-full mb-6">
+                                <div className="text-center">
+                                    <p className="text-2xl mb-2 text-black">Goblin:</p>
+                                    <Dice value={bossRoll} isRolling={bossRoll === null || rolling} className="mx-auto" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl mb-2 text-black">Ty:</p>
+                                    <Dice value={playerRoll} isRolling={playerRoll === null || rolling} className="mx-auto" />
+                                </div>
+                            </div>
+                            <p className="text-xl italic text-black mb-4">
+                                {bossRoll === null ? "Goblin hází kostkou..." :
+                                    playerRoll === null ? "Hází goblin..." :
+                                        "Házíš kostkou ty..."}
+                            </p>
+                        </>
+                    )}
+
+                    {gameStage === 'result' && (
+                        <>
+                            <div className="flex justify-around w-full mb-4">
+                                <div className="text-center">
+                                    <p className="text-2xl mb-2 text-black">Goblin:</p>
+                                    <Dice value={bossRoll} className="mx-auto" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl mb-2 text-black">Ty:</p>
+                                    <Dice value={playerRoll} className="mx-auto" />
+                                </div>
+                            </div>
+
+                            {result === 'win' && (
+                                <div className="flex flex-col items-center">
+                                    <p className="text-3xl text-green-950 font-bold">Vyhrál jsi!</p>
+                                    <p className="text-3xl mb-6 text-green-950 font-bold">Goblin ustupuje.</p>
+                                </div>
+                            )}
+
+                            {result === 'lose' && (
+                                <>
+                                    <p className="text-3xl mb-2 text-red-800 font-bold">Prohrál jsi!</p>
+                                    <p className="text-xl mb-6 text-red-800">Zkus to ještě jednou...</p>
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    <button
+                        onClick={handleFight}
+                        disabled={rolling}
+                        className={`border duration-250 mb-6 cursor-pointer text-2xl border-black gotisch text-black px-5 py-3 rounded hover:bg-black/80 hover:text-white/80 transition-colors ${rolling ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {gameStage === 'intro' ? 'Bojovat' :
+                            gameStage === 'rolling' ? 'Házení...' :
+                                result === 'win' ? 'Pokračovat' : 'Zkusit znovu'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default BossFight;
