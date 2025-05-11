@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Prevent pull-to-refresh on mobile */
+html, body {
+    overscroll-behavior-y: contain;
+    touch-action: pan-x pan-y;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
 .gotisch {
     font-family: "Grenze Gotisch", serif;
     font-optical-sizing: auto;

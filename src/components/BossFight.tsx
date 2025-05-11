@@ -13,7 +13,11 @@ const BossFight: FC = () => {
     const [result, setResult] = useState<'win' | 'lose' | null>(null);
     const [rolling, setRolling] = useState(false);
     // Track if this is the first roll
-    const [isFirstRoll, setIsFirstRoll] = useState(true);    // Array of defeat messages
+    const [isFirstRoll, setIsFirstRoll] = useState(true);
+    // Track number of attempts
+    const [attemptCount, setAttemptCount] = useState(0);
+
+    // Array of defeat messages
     const defeatMessages = [
         "si tě namazal na chleba...",
         "s tebou vytřel podlahu...",
@@ -43,6 +47,7 @@ const BossFight: FC = () => {
             setRolling(false);
             setIsFirstRoll(true); // Reset the first roll state
             setUsedMessages([]); // Reset the used messages tracking
+            setAttemptCount(0); // Reset attempt counter
         }
     }, [isBossFightActive]);
 
@@ -60,15 +65,16 @@ const BossFight: FC = () => {
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [isBossFightActive]);
-
-    // Function to roll dice for boss and player
+    }, [isBossFightActive]);    // Function to roll dice for boss and player
     const rollDice = () => {
         setRolling(true);
         setPlayerRoll(null);
         setBossRoll(null);
         setResult(null);
         setGameStage('rolling');
+
+        // Increment attempt counter
+        setAttemptCount(prev => prev + 1);
 
         // Roll for the boss first with animation effect - slower animation (150ms instead of 100ms)
         const rollAnimation = setInterval(() => {
@@ -79,11 +85,12 @@ const BossFight: FC = () => {
         setTimeout(() => {
             clearInterval(rollAnimation);
 
-            // For the first roll, ensure boss gets a high number (5 or 6)
+            // For the first roll or attempts 1-3, ensure boss gets a high number
             let finalBossRoll;
-            if (isFirstRoll) {
+            if (isFirstRoll || attemptCount < 3) {
                 finalBossRoll = Math.floor(Math.random() * 2) + 5; // 5 or 6
             } else {
+                // After 3 attempts, give the boss lower rolls on average
                 finalBossRoll = Math.floor(Math.random() * 6) + 1; // 1-6
             }
 
@@ -94,19 +101,29 @@ const BossFight: FC = () => {
                 // Now roll for the player with slower animation
                 const playerRollAnimation = setInterval(() => {
                     setPlayerRoll(Math.floor(Math.random() * 6) + 1);
-                }, 150);
+                }, 100);
 
                 // Stop player roll and determine the result - longer animation (2000ms)
                 setTimeout(() => {
                     clearInterval(playerRollAnimation);
 
-                    // For the first roll, ensure player rolls a low number (1-4)
+                    // Determine player's roll based on attempt count
                     let finalPlayerRoll;
+
                     if (isFirstRoll) {
-                        finalPlayerRoll = Math.min(finalBossRoll - 1, Math.floor(Math.random() * 4) + 1); // 1-4, but always less than boss
-                        setIsFirstRoll(false); // No longer the first roll
+                        // First roll always loses
+                        finalPlayerRoll = Math.min(finalBossRoll - 1, Math.floor(Math.random() * 4) + 1);
+                        setIsFirstRoll(false);
+                    } else if (attemptCount <= 3) {
+                        // First 3 attempts, ensure player rolls lower or equal to boss
+                        finalPlayerRoll = Math.min(finalBossRoll, Math.floor(Math.random() * 6) + 1);
                     } else {
-                        finalPlayerRoll = Math.floor(Math.random() * 6) + 1; // 1-6
+                        // After 3 attempts, increase chance of winning
+                        // 75% chance to get a high roll (4-6)
+                        const isHighRoll = Math.random() < 0.75;
+                        finalPlayerRoll = isHighRoll
+                            ? Math.floor(Math.random() * 3) + 4  // 4-6
+                            : Math.floor(Math.random() * 3) + 1; // 1-3
                     }
 
                     setPlayerRoll(finalPlayerRoll);                    // Delay showing the result
@@ -251,7 +268,7 @@ const BossFight: FC = () => {
 
                     {gameStage === 'conclusion' && (
                         <div className="flex flex-col items-center px-4">
-                            <p className="text-xl mt-4">u goblina jsi našel</p>
+                            <p className="text-xl mt-8">u goblina jsi našel</p>
                             <h2 className="text-5xl gotisch font-bold text-black">Pozvánku!</h2>
                             <p className="text-xl mb-4">na nejlepší oslavu narozenin ever!</p>
                             <div className="text-black text-left mb-6">
@@ -270,7 +287,7 @@ const BossFight: FC = () => {
                             </button>
                             <button
                                 onClick={handleCompleteReset}
-                                className="border mb-20 w-full max-w-xs duration-250 cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors"
+                                className="border mb-8 w-full max-w-xs duration-250 cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors"
                             >
                                 Vrátit se na začátek
                             </button>

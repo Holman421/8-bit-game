@@ -3,8 +3,10 @@ import { TileType } from '../types/types';
 import GrassTileImg from "../assets/images/grass-game-tile.png";
 import DoorTileImg from "../assets/images/door-game-tile.png";
 import RockTileImg2 from "../assets/images/rock-game-tile-2.png";
+
 import TreeTileImg from "../assets/images/game-tile-tree.png";
-import PathTileImg2 from "../assets/images/game-tile-path.png";
+// import PathTileImg2 from "../assets/images/game-tile-path.png";
+import PathTileImg2 from "../assets/images/path-tile.png";
 import LavaGameTile from "../assets/images/lava-game-tile.png";
 import HoleGameTile from "../assets/images/game-tile-hole.png";
 import GoblinTile from "../assets/images/goblin.gif";

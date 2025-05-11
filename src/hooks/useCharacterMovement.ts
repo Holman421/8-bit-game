@@ -88,11 +88,13 @@ export function useCharacterMovement({
       case 'ArrowRight': move('right'); break;
     }
   }, [move, isGameOver]);
-
   // Handle touch input start
   const handleTouchStart = useCallback((e: TouchEvent) => {
     // Don't respond to touch if game is over
     if (isGameOver) return;
+
+    // Prevent default to avoid pull-to-refresh on mobile
+    e.preventDefault();
 
     setTouchStart({
       x: e.touches[0].clientX,
@@ -104,6 +106,9 @@ export function useCharacterMovement({
   const handleTouchEnd = useCallback((e: TouchEvent) => {
     // Don't respond to touch if game is over
     if (isGameOver) return;
+
+    // Prevent default to avoid pull-to-refresh on mobile
+    e.preventDefault();
 
     const touchEnd = {
       x: e.changedTouches[0].clientX,
@@ -123,18 +128,27 @@ export function useCharacterMovement({
       move(dy > 0 ? 'down' : 'up');
     }
   }, [touchStart, move, isGameOver]);
+  // Handle touch move to prevent scrolling
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    // Prevent default scrolling behavior when swiping inside the game
+    if (!isGameOver && !isMenuOpen) {
+      e.preventDefault();
+    }
+  }, [isGameOver, isMenuOpen]);
 
   // Set up event listeners
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleKeyDown, handleTouchStart, handleTouchEnd]);
+  }, [handleKeyDown, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   // Handle level changes
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useCallback } from 'react';
 import GameTile from './GameTile';
 import CharacterTile from './CharacterTile';
 import { useGame } from '../context/GameContext';
@@ -9,7 +9,13 @@ const GameGrid: FC = () => {
         currentLevel,
         levelData,
         isHoleRevealed,
-    } = useGame();    // Check for duplicate tile positions at component mount
+    } = useGame();
+
+    // Prevent default touch behavior for the game grid
+    const preventTouchDefault = useCallback((e: React.TouchEvent) => {
+        // Prevent pull-to-refresh and other default behaviors
+        e.preventDefault();
+    }, []);// Check for duplicate tile positions at component mount
     useEffect(() => {
         const positionMap = new Map();
         levelData.tiles.forEach(tile => {
@@ -60,13 +66,14 @@ const GameGrid: FC = () => {
 
         // Default ground tiles
         return currentLevel === 'dungeon' ? 'rock' : 'grass';
-    };
-
-    return (
+    }; return (
         <>
             <div
                 className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
                 onClick={handleTap}
+                onTouchStart={preventTouchDefault}
+                onTouchMove={preventTouchDefault}
+                onTouchEnd={preventTouchDefault}
             >
                 {Array.from({ length: 49 }).map((_, i) => {
                     const x = i % 7;

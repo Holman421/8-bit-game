@@ -53,7 +53,7 @@ const LEVEL_LAYOUTS: LevelConfig = {
             { type: 'lava', position: { x: 4, y: 3 } },
             { type: 'lava', position: { x: 4, y: 5 } },
             { type: 'lava', position: { x: 0, y: 2 } },
-            { type: 'lava', position: { x: 1, y: 3 } },
+            { type: 'lava', position: { x: 2, y: 4 } },
             { type: 'lava', position: { x: 3, y: 4 } },
             { type: 'lava', position: { x: 4, y: 4 } },
             { type: 'lava', position: { x: 2, y: 2 } },
@@ -62,7 +62,7 @@ const LEVEL_LAYOUTS: LevelConfig = {
             { type: 'lava', position: { x: 0, y: 6 } },
             { type: 'lava', position: { x: 1, y: 6 } },
             { type: 'lava', position: { x: 0, y: 4 } },
-            { type: 'lava', position: { x: 1, y: 5 } }, { type: 'lava', position: { x: 0, y: 3 } },
+            { type: 'lava', position: { x: 0, y: 3 } },
             { type: 'goblin', position: { x: 3, y: 0 } },
         ],
         doors: [] // No doors in dungeon - player can't go back
