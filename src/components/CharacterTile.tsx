@@ -8,7 +8,7 @@ const CharacterTile: FC = () => {
 
     // Add delay for falling animation to allow character to fully move into the hole position
     useEffect(() => {
-        let timer: NodeJS.Timeout;
+        let timer: any;
         if (isGameOver && isHoleRevealed) {
             timer = setTimeout(() => {
                 setShowFallingAnimation(true);

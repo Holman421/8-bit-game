@@ -92,25 +92,26 @@ const Audio: FC = () => {
         }
     }, [currentAudio]);
 
-    const toggleSound = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play().catch(console.error);
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
+    // const toggleSound = () => {
+    //     if (audioRef.current) {
+    //         if (isPlaying) {
+    //             audioRef.current.pause();
+    //         } else {
+    //             audioRef.current.play().catch(console.error);
+    //         }
+    //         setIsPlaying(!isPlaying);
+    //     }
+    // };
 
     return (
         <>
-            <button
+            {/* <button
                 onClick={toggleSound}
                 className="fixed top-4 right-4 z-20 bg-white/80 p-2 rounded-full shadow-md"
             >
                 {isPlaying ? '🔊' : '🔈'}
-            </button>            <audio
+            </button> */}
+            <audio
                 ref={audioRef}
                 src={currentAudio}
                 loop={currentAudio !== GameOverAudio && currentAudio !== WinAudio}

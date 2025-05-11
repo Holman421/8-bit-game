@@ -62,6 +62,7 @@ const Menu: FC = () => {
                             </>
                         )}
                         <p className='text-black text-[18px] mt-3 text-center'>Prozkoumej svět, najdi dveře do jeskyně a tam poraž zrádného Goblina.</p>
+                        <p className='text-black text-[18px] mt-3 text-center'>Jo a nezapoměn si zapnout zvuk !!!</p>
                         <button
                             className="border cursor-pointer transition-colors duration-250 hover:bg-black/80 hover:text-white/80 mt-6 border-black text-black px-4 py-2 rounded"
                             onClick={startGame}

@@ -8,8 +8,6 @@ const GameGrid: FC = () => {
     const {
         currentLevel,
         levelData,
-        isAtDoor,
-        setCurrentLevel,
         isHoleRevealed,
     } = useGame();    // Check for duplicate tile positions at component mount
     useEffect(() => {
