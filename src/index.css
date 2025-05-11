@@ -1,13 +1,11 @@
 @import "tailwindcss";
 
-/* Prevent pull-to-refresh on mobile */
+/* Prevent pull-to-refresh on mobile - less aggressive approach */
 html, body {
     overscroll-behavior-y: contain;
-    touch-action: pan-x pan-y;
+    /* Allow buttons and interactions to work */
+    touch-action: manipulation;
     height: 100%;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
 }
 
 .gotisch {

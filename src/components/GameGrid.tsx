@@ -9,12 +9,32 @@ const GameGrid: FC = () => {
         currentLevel,
         levelData,
         isHoleRevealed,
-    } = useGame();
-
-    // Prevent default touch behavior for the game grid
-    const preventTouchDefault = useCallback((e: React.TouchEvent) => {
-        // Prevent pull-to-refresh and other default behaviors
-        e.preventDefault();
+    } = useGame();    // Selectively prevent default touch behavior only for vertical swipes
+    const preventVerticalSwipe = useCallback((e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        
+        // Store the initial touch position in a data attribute
+        if (e.type === 'touchstart') {
+            const targetElem = e.currentTarget as HTMLElement;
+            targetElem.dataset.touchStartY = touch.clientY.toString();
+            targetElem.dataset.touchStartX = touch.clientX.toString();
+            return;
+        }
+        
+        // For touchmove, check if it's a significant vertical swipe (pull-to-refresh gesture)
+        if (e.type === 'touchmove') {
+            const targetElem = e.currentTarget as HTMLElement;
+            const startY = parseInt(targetElem.dataset.touchStartY || '0');
+            const startX = parseInt(targetElem.dataset.touchStartX || '0');
+            const deltaY = touch.clientY - startY;
+            const deltaX = touch.clientX - startX;
+            
+            // Only prevent default for significant downward vertical swipes
+            // This allows button clicks and horizontal swipes to work
+            if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 5) {
+                e.preventDefault();
+            }
+        }
     }, []);// Check for duplicate tile positions at component mount
     useEffect(() => {
         const positionMap = new Map();
@@ -67,13 +87,12 @@ const GameGrid: FC = () => {
         // Default ground tiles
         return currentLevel === 'dungeon' ? 'rock' : 'grass';
     }; return (
-        <>
-            <div
+        <>            <div
                 className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
                 onClick={handleTap}
-                onTouchStart={preventTouchDefault}
-                onTouchMove={preventTouchDefault}
-                onTouchEnd={preventTouchDefault}
+                onTouchStart={preventVerticalSwipe}
+                onTouchMove={preventVerticalSwipe}
+                onTouchEnd={preventVerticalSwipe}
             >
                 {Array.from({ length: 49 }).map((_, i) => {
                     const x = i % 7;

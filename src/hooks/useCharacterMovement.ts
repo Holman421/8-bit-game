@@ -87,15 +87,12 @@ export function useCharacterMovement({
       case 'ArrowLeft': move('left'); break;
       case 'ArrowRight': move('right'); break;
     }
-  }, [move, isGameOver]);
-  // Handle touch input start
+  }, [move, isGameOver]);  // Handle touch input start
   const handleTouchStart = useCallback((e: TouchEvent) => {
     // Don't respond to touch if game is over
     if (isGameOver) return;
 
-    // Prevent default to avoid pull-to-refresh on mobile
-    e.preventDefault();
-
+    // Store the start touch position without preventing default
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -106,9 +103,6 @@ export function useCharacterMovement({
   const handleTouchEnd = useCallback((e: TouchEvent) => {
     // Don't respond to touch if game is over
     if (isGameOver) return;
-
-    // Prevent default to avoid pull-to-refresh on mobile
-    e.preventDefault();
 
     const touchEnd = {
       x: e.changedTouches[0].clientX,
@@ -128,20 +122,27 @@ export function useCharacterMovement({
       move(dy > 0 ? 'down' : 'up');
     }
   }, [touchStart, move, isGameOver]);
-  // Handle touch move to prevent scrolling
+  
+  // Handle touch move to prevent scrolling only for vertical downward swipes
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    // Prevent default scrolling behavior when swiping inside the game
-    if (!isGameOver && !isMenuOpen) {
+    if (isGameOver || isMenuOpen) return;
+    
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - touchStart.y;
+    const deltaX = touch.clientX - touchStart.x;
+    
+    // Only prevent default for significant downward vertical swipes
+    // This prevents pull-to-refresh without blocking other interactions
+    if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 5) {
       e.preventDefault();
     }
-  }, [isGameOver, isMenuOpen]);
-
+  }, [isGameOver, isMenuOpen, touchStart]);
   // Set up event listeners
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('touchstart', handleTouchStart);
