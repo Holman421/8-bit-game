@@ -122,15 +122,15 @@ export function useCharacterMovement({
       move(dy > 0 ? 'down' : 'up');
     }
   }, [touchStart, move, isGameOver]);
-  
+
   // Handle touch move to prevent scrolling only for vertical downward swipes
   const handleTouchMove = useCallback((e: TouchEvent) => {
     if (isGameOver || isMenuOpen) return;
-    
+
     const touch = e.touches[0];
     const deltaY = touch.clientY - touchStart.y;
     const deltaX = touch.clientX - touchStart.x;
-    
+
     // Only prevent default for significant downward vertical swipes
     // This prevents pull-to-refresh without blocking other interactions
     if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 5) {

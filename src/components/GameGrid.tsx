@@ -12,7 +12,7 @@ const GameGrid: FC = () => {
     } = useGame();    // Selectively prevent default touch behavior only for vertical swipes
     const preventVerticalSwipe = useCallback((e: React.TouchEvent) => {
         const touch = e.touches[0];
-        
+
         // Store the initial touch position in a data attribute
         if (e.type === 'touchstart') {
             const targetElem = e.currentTarget as HTMLElement;
@@ -20,7 +20,7 @@ const GameGrid: FC = () => {
             targetElem.dataset.touchStartX = touch.clientX.toString();
             return;
         }
-        
+
         // For touchmove, check if it's a significant vertical swipe (pull-to-refresh gesture)
         if (e.type === 'touchmove') {
             const targetElem = e.currentTarget as HTMLElement;
@@ -28,7 +28,7 @@ const GameGrid: FC = () => {
             const startX = parseInt(targetElem.dataset.touchStartX || '0');
             const deltaY = touch.clientY - startY;
             const deltaX = touch.clientX - startX;
-            
+
             // Only prevent default for significant downward vertical swipes
             // This allows button clicks and horizontal swipes to work
             if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY > 5) {
@@ -88,31 +88,31 @@ const GameGrid: FC = () => {
         return currentLevel === 'dungeon' ? 'rock' : 'grass';
     }; return (
         <>            <div
-                className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
-                onClick={handleTap}
-                onTouchStart={preventVerticalSwipe}
-                onTouchMove={preventVerticalSwipe}
-                onTouchEnd={preventVerticalSwipe}
-            >
-                {Array.from({ length: 49 }).map((_, i) => {
-                    const x = i % 7;
-                    const y = Math.floor(i / 7);
-                    const tileType = getTileType(x, y);
+            className="relative grid grid-cols-7 w-full gap-0.5 bg-gray-800 p-0.5 aspect-square"
+            onClick={handleTap}
+            onTouchStart={preventVerticalSwipe}
+            onTouchMove={preventVerticalSwipe}
+            onTouchEnd={preventVerticalSwipe}
+        >
+            {Array.from({ length: 49 }).map((_, i) => {
+                const x = i % 7;
+                const y = Math.floor(i / 7);
+                const tileType = getTileType(x, y);
 
-                    // Simplified hole check
-                    const shouldShowHole = tileType === 'hole' && isHoleRevealed;
-                    return (
-                        <GameTile
-                            key={i}
-                            x={x}
-                            y={y}
-                            type={tileType}
-                            isHoleRevealed={shouldShowHole}
-                        />
-                    );
-                })}
-                <CharacterTile />
-            </div>
+                // Simplified hole check
+                const shouldShowHole = tileType === 'hole' && isHoleRevealed;
+                return (
+                    <GameTile
+                        key={i}
+                        x={x}
+                        y={y}
+                        type={tileType}
+                        isHoleRevealed={shouldShowHole}
+                    />
+                );
+            })}
+            <CharacterTile />
+        </div>
         </>
     );
 };

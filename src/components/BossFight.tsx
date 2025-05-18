@@ -3,6 +3,7 @@ import { useGame } from '../context/GameContext';
 import MenuImg from '../assets/images/menu.png';
 import GoblinGif from '../assets/images/goblin.gif';
 import Dice from './Dice';
+import InvintationImage from '../assets/images/invintation.jpg';
 
 const BossFight: FC = () => {
     const { isBossFightActive, resetGame, setIsVictory } = useGame();
@@ -16,6 +17,11 @@ const BossFight: FC = () => {
     const [isFirstRoll, setIsFirstRoll] = useState(true);
     // Track number of attempts
     const [attemptCount, setAttemptCount] = useState(0);
+
+    // State for controlling the fullscreen invitation image
+    const [showInvitation, setShowInvitation] = useState(false);
+    // State to track if invitation has been viewed at least once
+    const [invitationViewed, setInvitationViewed] = useState(false);
 
     // Array of defeat messages
     const defeatMessages = [
@@ -37,7 +43,9 @@ const BossFight: FC = () => {
         const initialMessage = defeatMessages[randomIndex];
         setUsedMessages([initialMessage]);
         return initialMessage;
-    });    // Reset the boss fight state when it becomes inactive
+    });
+
+    // Reset the boss fight state when it becomes inactive
     useEffect(() => {
         if (!isBossFightActive) {
             setGameStage('intro');
@@ -48,6 +56,7 @@ const BossFight: FC = () => {
             setIsFirstRoll(true); // Reset the first roll state
             setUsedMessages([]); // Reset the used messages tracking
             setAttemptCount(0); // Reset attempt counter
+            setInvitationViewed(false); // Reset invitation viewed state
         }
     }, [isBossFightActive]);
 
@@ -65,7 +74,9 @@ const BossFight: FC = () => {
         return () => {
             if (timer) clearTimeout(timer);
         };
-    }, [isBossFightActive]);    // Function to roll dice for boss and player
+    }, [isBossFightActive]);
+
+    // Function to roll dice for boss and player
     const rollDice = () => {
         setRolling(true);
         setPlayerRoll(null);
@@ -126,7 +137,8 @@ const BossFight: FC = () => {
                             : Math.floor(Math.random() * 3) + 1; // 1-3
                     }
 
-                    setPlayerRoll(finalPlayerRoll);                    // Delay showing the result
+                    setPlayerRoll(finalPlayerRoll);
+                    // Delay showing the result
                     setTimeout(() => {
                         if (finalPlayerRoll > finalBossRoll) {
                             setResult('win');
@@ -155,10 +167,12 @@ const BossFight: FC = () => {
                         setRolling(false);
                         setGameStage('result');
                     }, 400); // Pause before showing result
-                }, 2000);
-            }, 750); // Delay between boss and player roll
+                }, 1000);
+            }, 500); // Delay between boss and player roll
         }, 2000);
-    };    // Function to handle fight button click
+    };
+
+    // Function to handle fight button click
     const handleFight = () => {
         if (gameStage === 'intro') {
             setGameStage('rolling');
@@ -170,22 +184,21 @@ const BossFight: FC = () => {
             // If player won, show the conclusion
             setGameStage('conclusion');
         }
-    };    // Function to handle PDF download
-    const handleDownloadPDF = () => {
-        // Create a dummy PDF download link
-        const link = document.createElement('a');
-        link.href = '/invitation.pdf'; // Path to the PDF file
-        link.download = 'invitation.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
+
+    // Function to show fullscreen invitation image
+    const handleDownloadPDF = () => {
+        // Toggle the visibility of the invitation image
+        setShowInvitation(true);
+        // Mark that the invitation has been viewed
+        setInvitationViewed(true);
+    };
+
     const { setCurrentLevel } = useGame();
 
     // Function to handle complete game reset
     const handleCompleteReset = () => {
         resetGame();
-        // Get the setCurrentLevel function from the context
         // Set the level to default
         setCurrentLevel('default');
     };
@@ -194,6 +207,18 @@ const BossFight: FC = () => {
 
     return (
         <div className="absolute z-[100] inset-0 bg-black/70 flex flex-col items-center justify-center ">
+            {showInvitation && (
+                <div className="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center" onClick={() => setShowInvitation(false)}>
+                    <div className="max-w-3xl max-h-screen p-4">
+                        <img
+                            src={InvintationImage}
+                            alt="Invitation"
+                            className="size-full object-contain rounded shadow-xl"
+                        />
+                        <p className="text-white text-center mt-4 opacity-70">Klikni kamkoliv pro zavření</p>
+                    </div>
+                </div>
+            )}
             <div className="relative px-14 py-20 rounded-lg max-w-sm text-center min-w-[400px]">
                 <img
                     src={MenuImg}
@@ -258,39 +283,36 @@ const BossFight: FC = () => {
                                     <p className="text-3xl text-green-950 font-bold">Vyhrál jsi!</p>
                                     <p className="text-3xl mb-6 text-green-950 font-bold">Goblin je rip.</p>
                                 </div>
-                            )}                            {result === 'lose' && (
+                            )}
+                            {result === 'lose' && (
                                 <>
                                     <p className="text-3xl mb-2 text-red-950 font-bold">Prohrál jsi!</p>
                                     <p className="text-xl mb-6 text-red-950">Goblin {currentDefeatMessage}</p>
                                 </>
                             )}
-                        </>)}
+                        </>
+                    )}
 
                     {gameStage === 'conclusion' && (
                         <div className="flex flex-col items-center px-4">
                             <p className="text-xl mt-8">u goblina jsi našel</p>
                             <h2 className="text-5xl gotisch font-bold text-black">Pozvánku!</h2>
                             <p className="text-xl mb-4">na nejlepší oslavu narozenin ever!</p>
-                            <div className="text-black text-left mb-6">
-                                <p className="mb-2 text-xl">Kde: []</p>
-                                <p className="mb-2 text-xl">Kdy: []</p>
-                                <p className='text-xl'>Proč: Straším tu už čtvrt-století</p>
-                            </div>
-
-                            <p className="mb-6 text-2xl">Budu se na tebe těšit !!!</p>
-
                             <button
                                 onClick={handleDownloadPDF}
-                                className="border w-full max-w-xs duration-250 mb-3 cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors"
+                                className={`border w-full max-w-xs duration-250 ${invitationViewed ? 'mb-3' : 'mb-8'} cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors`}
                             >
-                                Stáhnout pozvánku
+                                Zobrazit pozvánku
                             </button>
-                            <button
-                                onClick={handleCompleteReset}
-                                className="border mb-8 w-full max-w-xs duration-250 cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors"
-                            >
-                                Vrátit se na začátek
-                            </button>
+                            {invitationViewed && (
+                                <button
+                                    onClick={handleCompleteReset}
+                                    className="border mb-8 w-full max-w-xs duration-250 cursor-pointer text-xl border-black gotisch text-black px-5 py-2 rounded hover:bg-black/80 hover:text-white/80 transition-colors"
+                                >
+                                    Vrátit se na začátek
+                                </button>
+                            )}
+                            <p className="mb-6 text-2xl">Budu se na tebe těšit !!!</p>
                         </div>
                     )}
 
